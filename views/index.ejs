@@ -46,13 +46,14 @@
                             </div>
                             <input type="number" class="form-control" placeholder="ID" aria-label="Username" aria-describedby="basic-addon1">
                         </div>
-                        <button type="button" class="btn btn-primary ">Join Chat</button>
+                        <button type="button" class="btn btn-primary ">Join Chat</button> Or <a href="/chat" class="btn btn-secondary" role="button">Re-Open</a>
                     </div>
                 </div>
                 <br>
                 <div class="h-100 d-flex align-items-center justify-content-center ">
                     <div class="bg-light w-50 text-center" style="padding: 15px;border-radius:0px 0px 20px 20px;">
                         <h3>Open Chats</h3>
+                        <%- activeChats %>
                     </div>
                 </div>
             </div>
@@ -90,14 +91,10 @@
                 <p>Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam.</p>
                 <div class="h-100 d-flex align-items-center justify-content-center ">
                     <div class="bg-light w-50 text-center" style="padding: 10px; border-radius:20px">
-                        <h3>Change Log</h3>
-                        <ul class="list-group">
-                            <li class="list-group-item">Cras justo odio</li>
-                            <li class="list-group-item">Dapibus ac facilisis in</li>
-                            <li class="list-group-item">Morbi leo risus</li>
-                            <li class="list-group-item">Porta ac consectetur ac</li>
-                            <li class="list-group-item">Vestibulum at eros</li>
-                        </ul>
+                        <h3>Change Log
+                            <%= version %>
+                        </h3>
+                        <%- changeLog %>
                     </div>
                 </div>
                 <br>

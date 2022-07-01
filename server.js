@@ -64,21 +64,21 @@ app.get('/', function(req, res) {
     });
 });
 
-app.get("/chat", function(req, res) {
-    console.log("Joined Chat");
-    if (activeChatIDs.includes(parseInt(req.query.chatID))) {
-        if (activeChats[req.query.chatID].isFull) {
-            res.send("Chat Full")
-        } else {
-            log("Rendering chat page " + activeChats[req.query.chatID].chatName)
-            res.render("chat", {
-                chatName: activeChats[req.query.chatID].chatName
-            })
-        }
-    } else {
-        res.send("Game not found")
-    }
-})
+// app.get("/chat", function(req, res) {
+//     console.log("Joined Chat");
+//     if (activeChatIDs.includes(parseInt(req.query.chatID))) {
+//         if (activeChats[req.query.chatID].isFull) {
+//             res.send("Chat Full")
+//         } else {
+//             log("Rendering chat page " + activeChats[req.query.chatID].chatName)
+//             res.render("chat", {
+//                 chatName: activeChats[req.query.chatID].chatName
+//             })
+//         }
+//     } else {
+//         res.send("Game not found")
+//     }
+// })
 
 app.get("/newChat", function(req, res) {
     console.log("New Chat");
