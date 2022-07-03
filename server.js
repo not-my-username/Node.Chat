@@ -34,14 +34,12 @@ class Chat {
     addUser(userID, username) {
         this.users[userID] = { id: userID, username: username }
         this.totalUsers++;
-        log(this.totalUsers)
         if (this.totalUsers >= this.maxUsers && this.maxUsers != 0) this.isFull = true;
     }
     removeUser(userID) {
         delete this.users[userID]
         this.isFull = false
         this.totalUsers--
-            log(this.totalUsers)
     }
 }
 
@@ -98,22 +96,18 @@ io.on("connection", (socket) => {
         }
     });
     socket.on('disconnect', function() {
-        try {
-            if (activeChats[activeUsers[socket.id].chatID].totalUsers <= 0) {
-                log("removing chat")
-                chatsToRemove[activeUsers[socket.id].chatID] = setTimeout(() => {
-                    id = activeUsers[socket.id].chatID
-                    log("removing: " + id)
-                    activeChatIDs.splice(activeChatIDs.indexOf(id))
-                    publicChats.splice(publicChats.indexOf({ chatID: id, chatName: activeUsers[socket.id].chatName }))
-                    delete activeChats[id]
-                }, 60000)
-            }
-            console.log("User disconnected " + activeUsers[socket.id].username);
-            io.sockets.in(activeUsers[socket.id].chatID).emit('userDisconnected', { id: socket.id, username: activeUsers[socket.id].username });
-            activeChats[activeUsers[socket.id].chatID].removeUser(socket.id);
-        } catch {
-            console.log("User disconnected | Unable to remove");
+        console.log("User disconnected " + activeUsers[socket.id].username);
+        io.sockets.in(activeUsers[socket.id].chatID).emit('userDisconnected', { id: socket.id, username: activeUsers[socket.id].username });
+        activeChats[activeUsers[socket.id].chatID].removeUser(socket.id);
+        if (activeChats[activeUsers[socket.id].chatID].totalUsers <= 0) {
+            log("removing: " + activeUsers[socket.id].chatID)
+            chatsToRemove[activeUsers[socket.id].chatID] = setTimeout(() => {
+                id = activeUsers[socket.id].chatID
+                log("Chat " + id + " removed")
+                activeChatIDs.splice(activeChatIDs.indexOf(id))
+                publicChats.splice(publicChats.indexOf({ chatID: id, chatName: activeUsers[socket.id].chatName }))
+                delete activeChats[id]
+            }, 60000)
         }
     })
 })

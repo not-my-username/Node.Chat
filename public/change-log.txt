@@ -1,0 +1,3 @@
+Complete UI redesign.
+Password for chats.
+Better help infomation.

@@ -15,13 +15,20 @@ console.log("Ready");
 // })
 
 function newMessage(username, message) {
-    newMessageHtml = document.createElement("p")
-    newMessageHtml.innerHTML = `<b>${username}</b>: ${checkURL(message)}`
-    console.log(messageColor);
-    newMessageHtml.classList.add(messageColor ? "gary1" : "gray2")
-    messageColor ? messageColor = 1 : messageColor = 0
-    document.getElementById("history").appendChild(newMessageHtml)
-    document.getElementById("history").scrollTop = document.getElementById("history").scrollHeight;
+    // newMessageHtml = document.createElement("p")
+    // newMessageHtml.innerHTML = `<b>${username}</b>: ${checkURL(message)}`
+    // console.log(messageColor);
+    // newMessageHtml.classList.add(messageColor ? "gary1" : "gray2")
+    // messageColor ? messageColor = 1 : messageColor = 0
+    // document.getElementById("history").appendChild(newMessageHtml)
+    // document.getElementById("history").scrollTop = document.getElementById("history").scrollHeight;
+    // if ((($("#history").scrollTop() + $("#history").height()) - 10) - $(document).height() < 0) 
+    toScroll = $("#history").scrollTop() + $("#history").height() > $(document).height() - 150
+    console.log(toScroll);
+    $("#history").append(`<p><b>${username}: </b>${message}</p>`);
+    if (toScroll) {
+        $('#history').scrollTop($('#history')[0].scrollHeight);
+    }
 }
 
 function sendMessage(username, message) {

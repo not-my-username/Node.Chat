@@ -9,7 +9,7 @@
         "start": "node server.js"
     },
     "name": "node.chat-v2",
-    "version": "2.2.3",
+    "version": "3.0.0",
     "main": "server.js",
     "author": "Liam",
     "license": "ISC",
