@@ -30,6 +30,7 @@ class Chat {
         this.totalUsers = 0;
         this.chatName = chatName;
         this.antiSpam = antiSpam;
+        this.password = password
     }
     addUser(userID, username) {
         this.users[userID] = { id: userID, username: username }
@@ -68,8 +69,9 @@ app.get("/newChat", function(req, res) {
     chatID = Math.round(Math.random() * (999999 - 10000) + 10000)
     activeChatIDs.push(chatID)
     censorChat = !!parseInt(req.query.censor)
-    activeChats[chatID] = new Chat(chatID, chatName = xss(req.query.chatName) || chatID, maxUsers = req.query.maxUsers || 0, censorChat = censorChat = "off" ? true : censorChat)
-    activeChats[chatID]
+    console.log(req.query);
+    console.log("Chat password " + req.query.password);
+    activeChats[chatID] = new Chat(chatID, chatName = xss(req.query.chatName) || chatID, maxUsers = req.query.maxUsers || 0, censorChat = censorChat = "off" ? true : censorChat, password = req.query.password)
     publicChats.push({ chatID: chatID, chatName: chatName })
     res.redirect(`/chat?chatID=${chatID}`)
 })
@@ -85,6 +87,13 @@ io.on("connection", (socket) => {
     });
     socket.on("joinRoom", function(data) {
         console.log("Socket Join Room");
+        console.log(activeChats[data.chatID].password);
+        console.log(data.password);
+        if (data.password != activeChats[data.chatID].password) {
+            console.log("incorrect password");
+            socket.emit("message", { username: "SERVER", message: "INCORRECT PASSWORD!" })
+            return
+        }
         username = xss(data.username)
         socket.join(data.chatID)
         if (username == "") username = Math.round(Math.random() * (999999 - 10000) + 10000)
@@ -96,6 +105,7 @@ io.on("connection", (socket) => {
         }
     });
     socket.on('disconnect', function() {
+        if (!activeUsers[socket.id].username) return
         console.log("User disconnected " + activeUsers[socket.id].username);
         io.sockets.in(activeUsers[socket.id].chatID).emit('userDisconnected', { id: socket.id, username: activeUsers[socket.id].username });
         activeChats[activeUsers[socket.id].chatID].removeUser(socket.id);
@@ -107,6 +117,7 @@ io.on("connection", (socket) => {
                 activeChatIDs.splice(activeChatIDs.indexOf(id))
                 publicChats.splice(publicChats.indexOf({ chatID: id, chatName: activeUsers[socket.id].chatName }))
                 delete activeChats[id]
+                delete activeUsers[socket.id]
             }, 60000)
         }
     })

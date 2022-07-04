@@ -1,28 +1,14 @@
-// $(document).ready(function() {
-
 var chatID = new URLSearchParams(window.location.search).get('chatID') || localStorage.getItem("chatToJoin")
 
 var socket = io.connect();
 var localUsername = localStorage.getItem("username")
-console.log({ chatID: chatID, username: localUsername });
-socket.emit("joinRoom", { chatID: chatID, username: localUsername })
+socket.emit("joinRoom", { chatID: chatID, username: localUsername, password: localStorage.getItem("password") })
 var messageColor = 0;
 
 localStorage.setItem("lastChatID", chatID);
 $("#username").html(localUsername)
 
-console.log("Ready");
-// })
-
 function newMessage(username, message) {
-    // newMessageHtml = document.createElement("p")
-    // newMessageHtml.innerHTML = `<b>${username}</b>: ${checkURL(message)}`
-    // console.log(messageColor);
-    // newMessageHtml.classList.add(messageColor ? "gary1" : "gray2")
-    // messageColor ? messageColor = 1 : messageColor = 0
-    // document.getElementById("history").appendChild(newMessageHtml)
-    // document.getElementById("history").scrollTop = document.getElementById("history").scrollHeight;
-    // if ((($("#history").scrollTop() + $("#history").height()) - 10) - $(document).height() < 0) 
     toScroll = $("#history").scrollTop() + $("#history").height() > $(document).height() - 150
     console.log(toScroll);
     $("#history").append(`<p><b>${username}: </b>${message}</p>`);
