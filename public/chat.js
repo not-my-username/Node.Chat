@@ -1,28 +1,85 @@
 var chatID = new URLSearchParams(window.location.search).get('chatID') || localStorage.getItem("chatToJoin")
-
 var socket = io.connect();
+var chats = []
+var activeChat = chatID
 var localUsername = localStorage.getItem("username")
-socket.emit("joinRoom", { chatID: chatID, username: localUsername, password: localStorage.getItem("password") })
-var messageColor = 0;
-
-localStorage.setItem("lastChatID", chatID);
 $("#username").html(localUsername)
+$("#chatID").html("ID: " + chatID)
 
-function newMessage(username, message) {
-    toScroll = $("#history").scrollTop() + $("#history").height() > $(document).height() - 150
-    console.log(toScroll);
-    $("#history").append(`<p><b>${username}: </b>${message}</p>`);
-    if (toScroll) {
-        $('#history').scrollTop($('#history')[0].scrollHeight);
+localStorage.setItem("lastChatID", chatID)
+if (!localStorage.getItem("settings")) {
+    settings = { darkmode: window.matchMedia('(prefers-color-scheme: dark)').matches }
+    localStorage.setItem("settings", JSON.stringify(settings))
+}
+// if (!localStorage.getItem("sessionData")) {
+//     x = []
+//     x[chatID] = localStorage.getItem("password")
+//     localStorage.setItem("sessionData", x)
+// }
+
+socket.emit("joinRoom", { chatID: chatID, username: localUsername, password: localStorage.getItem("password") })
+
+template = $("#templateChatItem").clone();
+template.attr("id", chatID);
+template.appendTo("#menu");
+
+socket.on("roomData", function(data) {
+    console.log("room Data " + data.id);
+    $(`#${data.id}`).children("span").html(data.name)
+    if (activeChat == data.id) {
+        $("#chatName").text(data.name)
+        chats[chatID] = { name: data.name, history: [] }
+    } else chats[data.id] = { name: data.name, history: [] }
+
+})
+
+function changeChat(chat) {
+    console.log("Changing chat to: " + chat.id)
+    activeChat = chat.id
+    $("#chatName").text(chats[chat.id].name)
+    $("#history").text("")
+    chats[chat.id].history.forEach(message => {
+        $("#history").append(message);
+    });
+}
+
+function createChat() {
+    console.log("making new chat");
+    $.get(`/newChatID?chatName=${$("#newChatName").val()}&maxUsers=${$("#maxUsers").val()}&censorChat=${$("#censorChat").is(":checked")}&antiSpam=${$("#antiSpam").is(":checked")}&password=${ $("#password2").val()}`, function(data, status) {
+        console.log(data.id);
+        chats[data.id] = { name: "Chat Name", history: [] }
+        socket.emit("joinRoom", {
+            chatID: data.id,
+            username: localUsername,
+            password: $("#password2").val()
+        })
+        template = $("#templateChatItem").clone();
+        template.attr("id", data.id);
+        template.appendTo("#menu");
+
+    });
+}
+
+function newMessage(username, message, id) {
+    chats[id].history.push(`<p><b>${username}: </b>${message}</p>`)
+    if (activeChat == id) {
+        toScroll = $("#history").scrollTop() + $("#history").height() > $(document).height() - 150
+        console.log(toScroll);
+        $("#history").append(`<p><b>${username}: </b>${message}</p>`);
+        if (toScroll) {
+            $('#history').scrollTop($('#history')[0].scrollHeight);
+        }
     }
 }
 
-function sendMessage(username, message) {
-    socket.emit("message", { username: username, message: message })
+function sendMessage(username, message, chatID) {
+    console.log("sending");
+    socket.emit("message", { username: username, message: message, chatID: chatID })
 }
 
 function clearChat() {
     document.getElementById("history").innerHTML = ""
+    chats[activeChat].history = []
     console.log("chat clered");
 }
 
@@ -47,7 +104,7 @@ function messageEnter() {
         document.getElementById("message").value = ""
         return
     }
-    sendMessage(username = localUsername, message = message)
+    sendMessage(username = localUsername, message = message, chatID = activeChat)
     document.getElementById("message").value = ""
 }
 
@@ -57,17 +114,24 @@ document.addEventListener("keyup", function(event) {
     }
 })
 
+function saveSettings() {
+    document.styleSheets[4].disabled = !$("#darkmode").is(":checked")
+    settings.darkmode = $("#darkmode").is(":checked")
+    localStorage.setItem("settings", JSON.stringify(settings))
+}
+
 socket.on("newUser", function(data) {
-    newMessage(username = "SERVER", message = data.username + " Joined The Chat")
     console.log("New User");
+    console.log(data)
+    newMessage(username = "SERVER", message = data.username + " Joined The Chat", id = data.chatID)
 })
 
 socket.on("message", function(data) {
-    console.log("New Message" + data);
-    newMessage(username = data.username, message = data.message)
+    console.log(data);
+    newMessage(username = data.username, message = data.message, id = data.chatID)
 })
 
 socket.on("userDisconnected", function(data) {
     console.log("User Disconnected");
-    newMessage(username = "SERVER", message = data.username + " Left The Chat")
+    newMessage(username = "SERVER", message = data.username + " Left The Chat", id = data.chatID)
 })

@@ -1,19 +1,20 @@
 $(document).ready(function() {
+    if (localStorage.getItem("username")) {
+        $("#username1").text(localStorage.getItem("username"))
+        $("#username2").text(localStorage.getItem("username"))
+    }
     $("#joinChat").on("click", function() {
-        localStorage.setItem("chatToJoin", $("#gameID").val())
+        // x = []
+        // x[$("#gameID").val()] = $("#password1").val()
+        // localStorage.setItem("sessionData", x)
         localStorage.setItem("username", $("#username1").val())
         localStorage.setItem("password", $("#password1").val())
-        location.href = "/chat"
+        location.href = "/chat?chatID=" + $("#chatID").val()
     });
 
     $("#createChat").on("click", function() {
+        localStorage.setItem("password", $("#password2").val())
         localStorage.setItem("username", $("#username2").val())
-        localStorage.setItem("password", $("#password2 ").val())
-        chatName = $("#chatName").val()
-        maxUsers = $("#maxUsers").val()
-        password = $("#password2").val()
-        censorChat = $("#censorChat").is(":checked")
-        antiSpam = $("#antiSpam").is(":checked")
-        location.href = `/newChat?chatName=${chatName}&maxUsers=${maxUsers}&censorChat=${censorChat}&antiSpam=${antiSpam}&password=${password}`
+        location.href = `/newChat?chatName=${$("#chatName").val()}&maxUsers=${$("#maxUsers").val()}&censorChat=${$("#censorChat").is(":checked")}&antiSpam=${$("#antiSpam").is(":checked")}&password=${ $("#password2").val()}`
     });
 });

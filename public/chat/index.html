@@ -14,13 +14,38 @@
     <script src="/socket.io/socket.io.js"></script>
 
     <style>
-        .modal-backdrop {
-            /* bug fix - no overlay */
-            display: none;
-        }
-        
         body {
             font-family: 'Ubuntu', sans-serif;
+        }
+    </style>
+    <style>
+        .dark-1 {
+            background-color: hsl(210, 11%, 8%) !important;
+            border-color: hsl(210, 11%, 20%);
+        }
+        
+        .dark-2 {
+            background-color: hsl(210, 11%, 5%) !important;
+        }
+        
+        .light-1 {
+            background-color: #ffffff !important;
+        }
+        
+        .dark-text {
+            color: #212529 !important;
+        }
+        
+        .light-text {
+            color: #e3e3e3 !important;
+        }
+        
+        .dark-1-top-bg {
+            border-top: 1px solid hsl(210, 11%, 20%);
+        }
+        
+        .dark-1-bottom-bg {
+            border-bottom: 1px solid hsl(210, 11%, 20%);
         }
     </style>
 
@@ -30,15 +55,14 @@
 <body>
     <div class="container-fluid overflow-hidden">
         <div class="row vh-100 overflow-auto">
-            <div class="col-12 col-sm-3 col-xl-2 px-sm-2 px-0 bg-dark d-flex sticky-top">
+            <div class="col-12 col-sm-3 col-xl-2 px-sm-2 px-0 bg-dark d-flex sticky-top  dark-2">
                 <div class="d-flex flex-sm-column flex-row flex-grow-1 align-items-center align-items-sm-start px-3 pt-2 text-white">
-                    <a href="/" class="d-flex align-items-center pb-sm-3 mb-md-0 me-md-auto text-white text-decoration-none">
+                    <a href="/" class="d-flex align-items-center pb-sm-3 mb-md-0 me-md-auto text-white text-decoration-none ">
                         <span class="fs-5"><i class="bi bi-box-arrow-left"></i> Node.Chat V3</span>
                     </a>
-                    <ul class="nav nav-pills flex-sm-column flex-row flex-nowrap flex-shrink-1 flex-sm-grow-0 flex-grow-1 mb-sm-auto mb-0 justify-content-center align-items-center align-items-sm-start" id="menu">
-                        <li>
-                            <a href="#" class="nav-link px-sm-0 px-2">
-                                <i class="bi bi-chat-left"></i><span class="ms-1 d-none d-sm-inline">Chat 1</span></a>
+                    <ul class="nav nav-pills flex-sm-column flex-row flex-nowrap flex-shrink-1 flex-sm-grow-0 flex-grow-1 mb-sm-auto mb-0 justify-content-center align-items-center align-items-sm-start">
+                        <li id="menu">
+
                         </li>
                     </ul>
                     <div class="dropdown py-sm-4 mt-sm-auto ms-auto ms-sm-0 flex-shrink-1">
@@ -58,22 +82,19 @@
                     </div>
                 </div>
             </div>
-            <div class="col d-flex flex-column h-sm-100 l">
-                <main class="row overflow-auto">
-                    <div class="col pt-4">
-                        <h1 class="d-inline">Chat Name</h1>
-                        <p class="d-inline">: Chat ID</p>
+            <div class="col d-flex flex-column h-sm-100 l dark-1">
+                <main class="row overflow-auto dark-1">
+                    <div class="col pt-4 light-text">
+                        <h1 class="d-inline" id="chatName">Chat Name</h1>
+                        <p class="d-inline" id="chatID">: Chat ID</p>
                         <hr>
-                        <div id="history" style="overflow: scroll;height: 75vh; border-bottom: 1px solid gray;word-wrap: break-word;">
-                            <div class="alert alert-warning" role="alert">
-                                <strong>This is a beta of Node.Chat V3. Thing may break at any time</strong>
-                            </div>
+                        <div id="history" style="overflow-y: scroll; height: 75vh;word-wrap: break-word;">
                         </div>
                     </div>
                 </main>
-                <footer class="row bg-light py-4 mt-auto">
-                    <div class="input-group mb-3">
-                        <input id="message" type="text" class="form-control" placeholder="Message" aria-label="Message" aria-describedby="basic-addon2">
+                <footer class="row bg-light py-4 mt-auto  dark-1">
+                    <div class="input-group mb-3 dark-1">
+                        <input id="message" type="text" class="form-control  dark-1 light-text" placeholder="Message" aria-label="Message" aria-describedby="basic-addon2">
                         <div class="input-group-append">
                             <button class="btn btn-primary" type="button" onclick="messageEnter()">Send</button>
                         </div>
@@ -84,42 +105,36 @@
     </div>
     <div class="modal fade" id="newChatPopup" tabindex="-1" role="dialog" aria-labelledby="newChatPopupTitle" aria-hidden="true">
         <div class="modal-dialog" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="newChatPopupTitle">New Chat</h5>
+            <div class="modal-content dark-1">
+                <div class="modal-header  dark-1-bottom-bg">
+                    <h5 class="modal-title light-text" id="newChatPopupTitle">New Chat</h5>
                     </button>
                 </div>
-                <div class="modal-body">
-                    <div class="input-group mb-3 ">
+                <div class="modal-body light-text">
+                    <div class="input-group mb-3">
                         <div class="input-group-prepend">
-                            <span class="input-group-text" id="basic-addon1">Username</span>
+                            <span class="input-group-text dark-1 light-text" id="basic-addon1">Chat Name</span>
                         </div>
-                        <input type="text" class="form-control" placeholder="you name" aria-label="Username" aria-describedby="basic-addon1" id="username2">
+                        <input type="text" class="form-control dark-1 light-text" placeholder="chat name" aria-label="Name" aria-describedby="basic-addon1" id="newChatName">
                     </div>
                     <div class="input-group mb-3">
                         <div class="input-group-prepend">
-                            <span class="input-group-text" id="basic-addon1">Chat Name</span>
+                            <span class="input-group-text dark-1 light-text" id="basic-addon1">Password</span>
                         </div>
-                        <input type="text" class="form-control" placeholder="chat name" aria-label="Name" aria-describedby="basic-addon1" id="chatName">
-                    </div>
-                    <div class="input-group mb-3">
-                        <div class="input-group-prepend">
-                            <span class="input-group-text" id="basic-addon1">Password</span>
-                        </div>
-                        <input type="text" class="form-control" placeholder="chat password (blank for none)" aria-label="Password" aria-describedby="basic-addon1" id="password2">
+                        <input type="text" class="form-control dark-1 light-text" placeholder="chat password (blank for none)" aria-label="Password" aria-describedby="basic-addon1" id="password2">
                     </div>
                     <div class="btn-group-toggle" data-toggle="buttons">
-                        <label class="btn btn-secondary active">
+                        <label class="btn btn-secondary active dark-1 light-text">
                             <input type="checkbox" checked autocomplete="off" id="censorChat"> Censor Chat
                         </label>
-                        <label class="btn btn-secondary active">
+                        <label class="btn btn-secondary active dark-1 light-text">
                             <input type="checkbox" checked autocomplete="off" id="antiSpam"> Anit Spam
                         </label>
                     </div>
                 </div>
-                <div class="modal-footer">
+                <div class="modal-footer  dark-1-top-bg">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                    <button type="button" class="btn btn-primary" data-bs-dismiss="modal" id="createChat">Create Chat</button>
+                    <button type="button" class="btn btn-primary" data-bs-dismiss="modal" onclick="createChat()">Create Chat</button>
                 </div>
             </div>
         </div>
@@ -127,32 +142,32 @@
 
     <div class="modal fade" id="joinChatPopup" tabindex="-1" role="dialog" aria-labelledby="joinChatPopupTitle" aria-hidden="true">
         <div class="modal-dialog" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="joinChatPopupTitle">Join Chat</h5>
+            <div class="modal-content  dark-1">
+                <div class="modal-header  dark-1-bottom-bg">
+                    <h5 class="modal-title light-text" id="joinChatPopupTitle">Join Chat</h5>
                     </button>
                 </div>
-                <div class="modal-body">
+                <div class="modal-body light-text">
                     <div class="input-group mb-3 ">
                         <div class="input-group-prepend">
-                            <span class="input-group-text" id="basic-addon1">Username</span>
+                            <span class="input-group-text  dark-1 light-text" id="basic-addon1">Username</span>
                         </div>
-                        <input type="text" class="form-control" placeholder="name" aria-label="Username" aria-describedby="basic-addon1" id="username1">
+                        <input type="text" class="form-control dark-1 light-text" placeholder="name" aria-label="Username" aria-describedby="basic-addon1" id="username1">
                     </div>
                     <div class="input-group mb-3">
                         <div class="input-group-prepend">
-                            <span class="input-group-text" id="basic-addon1">Room ID</span>
+                            <span class="input-group-text  dark-1 light-text" id="basic-addon1">Room ID</span>
                         </div>
-                        <input type="number" class="form-control" placeholder="ID" aria-label="Username" aria-describedby="basic-addon1" id="gameID">
+                        <input type="number" class="form-control dark-1 light-text" placeholder="ID" aria-label="Username" aria-describedby="basic-addon1" id="gameID">
                     </div>
                     <div class="input-group mb-3">
                         <div class="input-group-prepend">
-                            <span class="input-group-text" id="basic-addon1">Password</span>
+                            <span class="input-group-text dark-1 light-text" id="basic-addon1">Password</span>
                         </div>
-                        <input type="text" class="form-control" placeholder="password (if required)" aria-label="Password" aria-describedby="basic-addon1" id="password1">
+                        <input type="text" class="form-control dark-1 light-text" placeholder="password (if required)" aria-label="Password" aria-describedby="basic-addon1" id="password1">
                     </div>
                 </div>
-                <div class="modal-footer">
+                <div class="modal-footer  dark-1-top-bg">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                     <button type="button" class="btn btn-primary" id="joinChat" data-bs-dismiss="modal" onclick="alert('join chat')">Join Chat</button>
                 </div>
@@ -162,17 +177,19 @@
 
     <div class="modal fade" id="settingsPopup" tabindex="-1" role="dialog" aria-labelledby="settingsPopupTitle" aria-hidden="true">
         <div class="modal-dialog" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="settingsPopupTitle">Settings</h5>
+            <div class="modal-content  dark-1">
+                <div class="modal-header  dark-1-bottom-bg">
+                    <h5 class="modal-title light-text" id="settingsPopupTitle">Settings</h5>
                     </button>
                 </div>
-                <div class="modal-body">
-                    ...
+                <div class="modal-body  light-text">
+                    <label class="btn btn-secondary active dark-1 light-text">
+                        <input type="checkbox" checked autocomplete="off" id="darkmode"> Darkmode
+                    </label>
                 </div>
-                <div class="modal-footer">
+                <div class="modal-footer  dark-1-top-bg">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                    <button type="button" class="btn btn-primary">Save changes</button>
+                    <button type="button" class="btn btn-primary" data-bs-dismiss="modal" onclick="saveSettings()">Save And Close</button>
                 </div>
             </div>
         </div>
@@ -180,20 +197,25 @@
 
     <div class="modal fade" id="changeNamePopup" tabindex="-1" role="dialog" aria-labelledby="changeNamePopupTitle" aria-hidden="true">
         <div class="modal-dialog" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="changeNamePopupTitle">Change Username</h5>
+            <div class="modal-content  dark-1">
+                <div class="modal-header  dark-1-bottom-bg">
+                    <h5 class="modal-title light-text" id="changeNamePopupTitle">Change Username</h5>
                     </button>
                 </div>
-                <div class="modal-body">
+                <div class="modal-body light-text">
                     ...
                 </div>
-                <div class="modal-footer">
+                <div class="modal-footer  dark-1-top-bg">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                     <button type="button" class="btn btn-primary">Save changes</button>
                 </div>
             </div>
         </div>
+    </div>
+    <div style="display: none;">
+        <a href="#" class="nav-link px-sm-0 px-2" id="templateChatItem" onclick="changeChat(this)">
+            <i class="bi bi-chat-left"></i><span class="ms-1 d-none d-sm-inline">Chat Name</span>
+        </a>
     </div>
 </body>
 
