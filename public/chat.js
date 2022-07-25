@@ -1,7 +1,7 @@
 var chatID = new URLSearchParams(window.location.search).get('chatID') || localStorage.getItem("chatToJoin")
+var activeChat = chatID
 var socket = io.connect();
 var chats = []
-var activeChat = chatID
 var localUsername = localStorage.getItem("username")
 $("#username").html(localUsername)
 $("#chatID").html("ID: " + chatID)
@@ -10,12 +10,8 @@ localStorage.setItem("lastChatID", chatID)
 if (!localStorage.getItem("settings")) {
     settings = { darkmode: window.matchMedia('(prefers-color-scheme: dark)').matches }
     localStorage.setItem("settings", JSON.stringify(settings))
+    saveSettings()
 }
-// if (!localStorage.getItem("sessionData")) {
-//     x = []
-//     x[chatID] = localStorage.getItem("password")
-//     localStorage.setItem("sessionData", x)
-// }
 
 socket.emit("joinRoom", { chatID: chatID, username: localUsername, password: localStorage.getItem("password") })
 
@@ -37,6 +33,7 @@ function changeChat(chat) {
     console.log("Changing chat to: " + chat.id)
     activeChat = chat.id
     $("#chatName").text(chats[chat.id].name)
+    $("#chatID").text(chat.id)
     $("#history").text("")
     chats[chat.id].history.forEach(message => {
         $("#history").append(message);
@@ -60,8 +57,21 @@ function createChat() {
     });
 }
 
+function joinChat() {
+    socket.emit("joinRoom", {
+        chatID: $("#chatIDtoJoin").val(),
+        username: localUsername,
+        password: $("#password1").val()
+    })
+    template = $("#templateChatItem").clone();
+    template.attr("id", $("#chatIDtoJoin").val());
+    template.appendTo("#menu");
+}
+
 function newMessage(username, message, id) {
-    chats[id].history.push(`<p><b>${username}: </b>${message}</p>`)
+    try {
+        chats[id].history.push(`<p><b>${username}: </b>${message}</p>`)
+    } catch {}
     if (activeChat == id) {
         toScroll = $("#history").scrollTop() + $("#history").height() > $(document).height() - 150
         console.log(toScroll);
@@ -78,7 +88,7 @@ function sendMessage(username, message, chatID) {
 }
 
 function clearChat() {
-    document.getElementById("history").innerHTML = ""
+    $("#history").text("")
     chats[activeChat].history = []
     console.log("chat clered");
 }
@@ -92,7 +102,7 @@ function checkURL(text) {
 
 function messageEnter() {
     console.log("Endered");
-    message = document.getElementById("message").value
+    message = $("#message").val()
     if (message.split("")[0] == "/") {
         console.log(message.split()[0]);
         switch (message.split()[0]) {
@@ -101,7 +111,7 @@ function messageEnter() {
                 clearChat();
                 break;
         }
-        document.getElementById("message").value = ""
+        $("#message").val("")
         return
     }
     sendMessage(username = localUsername, message = message, chatID = activeChat)
@@ -128,7 +138,7 @@ socket.on("newUser", function(data) {
 
 socket.on("message", function(data) {
     console.log(data);
-    newMessage(username = data.username, message = data.message, id = data.chatID)
+    newMessage(username = data.username, message = checkURL(data.message), id = data.chatID)
 })
 
 socket.on("userDisconnected", function(data) {

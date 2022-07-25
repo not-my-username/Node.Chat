@@ -1,3 +1,6 @@
 Complete UI redesign.
-Password for chats.
-Better help infomation.
+Chats can now have passwords
+You can now have more then one chat open on one page 
+Themes & dark mode
+Censor chat setting now client side 
+Notifications for messages

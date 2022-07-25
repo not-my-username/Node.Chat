@@ -99,9 +99,10 @@ io.on("connection", (socket) => {
         io.sockets.in(chatID).emit("message", message);
     });
     socket.on("joinRoom", function(data) {
-        console.log("Socket Join Room");
-        chatID = parseInt(chatID)
+        console.log("Socket Join Room " + data.username);
+        chatID = parseInt(data.chatID)
         if (!activeChatIDs.includes(parseInt(chatID))) {
+            console.log("Invalid chat id");
             socket.emit("message", { username: "SERVER", message: "ERROR: Chat ID Missing" })
             return
         }
@@ -114,16 +115,19 @@ io.on("connection", (socket) => {
         }
 
         if (!activeUsers[socket.id]) {
+            console.log(data.username);
             username = xss(data.username)
+            console.log(username);
             if (username == "") username = Math.round(Math.random() * (999999 - 10000) + 10000)
 
             activeUsers[socket.id] = { chats: [], username: username, id: socket.id };
-        }
+        } else { username = activeUsers[socket.id].username }
 
         activeUsers[socket.id].chats.push(chatID)
         socket.join(chatID)
         socket.emit("roomData", { name: activeChats[chatID].chatName, id: chatID })
 
+        console.log({ username: username, id: socket.id, chatID: chatID });
         io.sockets.in(chatID).emit('newUser', { username: username, id: socket.id, chatID: chatID });
         activeChats[chatID].addUser(socket.id, activeUsers[socket.id].username)
 
