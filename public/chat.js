@@ -73,7 +73,7 @@ function newMessage(username, message, id) {
         chats[id].history.push(`<p><b>${username}: </b>${message}</p>`)
     } catch {}
     if (activeChat == id) {
-        toScroll = $("#history").scrollTop() + $("#history").height() > $(document).height() - 150
+        toScroll = !($("#history").scrollTop() + $("#history").height() > $(document).height())
         console.log(toScroll);
         $("#history").append(`<p><b>${username}: </b>${message}</p>`);
         if (toScroll) {
