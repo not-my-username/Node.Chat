@@ -87,8 +87,9 @@
                     <div class="col pt-4 light-text">
                         <h1 class="d-inline" id="chatName">Chat Name</h1>
                         <p class="d-inline" id="chatID">: Chat ID</p>
+                        <i class="bi bi-x-square d-inline btn btn-danger float-end" onclick="leaveChat(activeChat)"> Leave Chat</i>
                         <hr>
-                        <div id="history" style="overflow-y: scroll; height: 75vh;word-wrap: break-word;">
+                        <div id="history" class="text-break" style="overflow-y: scroll; height: 75vh;word-wrap: break-word;">
                         </div>
                     </div>
                 </main>
@@ -180,6 +181,12 @@
                     <label class="btn btn-secondary active dark-1 light-text">
                         <input type="checkbox" checked autocomplete="off" id="darkmode"> Darkmode
                     </label>
+                    <label class="btn btn-secondary active dark-1 light-text">
+                        <input type="checkbox" checked autocomplete="off" id="autoScroll"> Auto Scroll
+                    </label>
+                    <label class="btn btn-secondary active dark-1 light-text">
+                        <input type="checkbox" checked autocomplete="off" id="notifications"> Notifications
+                    </label>
                 </div>
                 <div class="modal-footer  dark-1-top-bg">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
@@ -197,11 +204,32 @@
                     </button>
                 </div>
                 <div class="modal-body light-text">
-                    ...
+                    <div class="input-group mb-3">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text dark-1 light-text" id="basic-addon1">New Username</span>
+                        </div>
+                        <input type="text" class="form-control dark-1 light-text" placeholder="name" aria-label="Password" aria-describedby="basic-addon1" id="username1">
+                    </div>
                 </div>
                 <div class="modal-footer  dark-1-top-bg">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                    <button type="button" class="btn btn-primary">Save changes</button>
+                    <button type="button" class="btn btn-primary" onclick="changeUsername()">Save Username</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="errorModal" tabindex="-1" role="dialog" aria-labelledby="changeNamePopupTitle" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content  dark-1">
+                <div class="modal-header  dark-1-bottom-bg">
+                    <h5 class="modal-title light-text" id="changeNamePopupTitle">Error Joining Chat</h5>
+                    </button>
+                </div>
+                <div class="modal-body light-text">
+                    <p id="error"></p>
+                </div>
+                <div class="modal-footer  dark-1-top-bg">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                 </div>
             </div>
         </div>

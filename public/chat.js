@@ -8,26 +8,37 @@ $("#chatID").html("ID: " + chatID)
 
 localStorage.setItem("lastChatID", chatID)
 if (!localStorage.getItem("settings")) {
-    settings = { darkmode: window.matchMedia('(prefers-color-scheme: dark)').matches }
+    settings = { darkmode: window.matchMedia('(prefers-color-scheme: dark)').matches, audoScroll: true, notifications: false }
     localStorage.setItem("settings", JSON.stringify(settings))
     saveSettings()
-}
+} else(settings = JSON.parse(localStorage.getItem("settings")))
 
 socket.emit("joinRoom", { chatID: chatID, username: localUsername, password: localStorage.getItem("password") })
 
-template = $("#templateChatItem").clone();
-template.attr("id", chatID);
-template.appendTo("#menu");
 
 socket.on("roomData", function(data) {
     console.log("room Data " + data.id);
-    $(`#${data.id}`).children("span").html(data.name)
+    chats[data.id] = { name: "Chat Name", history: [] }
+    template = $("#templateChatItem").clone();
+    template.attr("id", data.id);
+    template.children("span").html(data.name)
+    template.appendTo("#menu");
     if (activeChat == data.id) {
         $("#chatName").text(data.name)
         chats[chatID] = { name: data.name, history: [] }
     } else chats[data.id] = { name: data.name, history: [] }
 
 })
+
+
+isActive = false
+$(window).focus(function() {
+    isActive = true
+});
+
+$(window).blur(function() {
+    isActive = false
+});
 
 function changeChat(chat) {
     console.log("Changing chat to: " + chat.id)
@@ -44,16 +55,11 @@ function createChat() {
     console.log("making new chat");
     $.get(`/newChatID?chatName=${$("#newChatName").val()}&maxUsers=${$("#maxUsers").val()}&censorChat=${$("#censorChat").is(":checked")}&antiSpam=${$("#antiSpam").is(":checked")}&password=${ $("#password2").val()}`, function(data, status) {
         console.log(data.id);
-        chats[data.id] = { name: "Chat Name", history: [] }
         socket.emit("joinRoom", {
             chatID: data.id,
             username: localUsername,
             password: $("#password2").val()
         })
-        template = $("#templateChatItem").clone();
-        template.attr("id", data.id);
-        template.appendTo("#menu");
-
     });
 }
 
@@ -63,9 +69,6 @@ function joinChat() {
         username: localUsername,
         password: $("#password1").val()
     })
-    template = $("#templateChatItem").clone();
-    template.attr("id", $("#chatIDtoJoin").val());
-    template.appendTo("#menu");
 }
 
 function newMessage(username, message, id) {
@@ -73,12 +76,14 @@ function newMessage(username, message, id) {
         chats[id].history.push(`<p><b>${username}: </b>${message}</p>`)
     } catch {}
     if (activeChat == id) {
-        toScroll = !($("#history").scrollTop() + $("#history").height() > $(document).height())
-        console.log(toScroll);
+        // toScroll = !($("#history").scrollTop() + $("#history").height() > $(document).height())
         $("#history").append(`<p><b>${username}: </b>${message}</p>`);
-        if (toScroll) {
+        if (settings.autoScroll) {
             $('#history').scrollTop($('#history')[0].scrollHeight);
         }
+    }
+    if (settings.notifications) {
+
     }
 }
 
@@ -96,7 +101,7 @@ function clearChat() {
 function checkURL(text) {
     var urlRegex = /(https?:\/\/[^\s]+)/g;
     return text.replace(urlRegex, function(url) {
-        return '<a href="' + url + '">' + url + '</a>';
+        return '<a href="' + url + '" target="_blank">' + url + '</a>';
     })
 }
 
@@ -127,7 +132,32 @@ document.addEventListener("keyup", function(event) {
 function saveSettings() {
     document.styleSheets[4].disabled = !$("#darkmode").is(":checked")
     settings.darkmode = $("#darkmode").is(":checked")
+    settings.autoScroll = $("#autoScroll").is(":checked")
+    settings.notifications = $("#notifications").is(":checked")
+    if (settings.notifications) {
+        if (!("Notification" in window)) {
+            $("#error").text("This browser does not support desktop notification");
+            $('#errorModal').modal('show');
+            settings.notifications = false
+        } else if (Notification.permission !== "denied") {
+            Notification.requestPermission()
+        }
+    }
     localStorage.setItem("settings", JSON.stringify(settings))
+}
+
+function changeUsername() {
+    socket.emit("changeUsername", { username: $("#username1").val() })
+}
+
+function leaveChat() {
+    socket.emit("leaveChat", { chatID: parseInt(activeChat) })
+    $(`#${activeChat}`).remove()
+    delete chats[activeChat]
+    activeChat = 0
+    $("#history").text("");
+    $("#chatID").text("");
+    $("#chatName").text("You left the chat!");
 }
 
 socket.on("newUser", function(data) {
@@ -138,6 +168,14 @@ socket.on("newUser", function(data) {
 
 socket.on("message", function(data) {
     console.log(data);
+    if (data.username == "SERVER ERROR") {
+        $("#error").text(data.message);
+        $('#errorModal').modal('show');
+        return
+    }
+    if (!isActive) {
+        x = new Notification(data.username, { body: data.message })
+    }
     newMessage(username = data.username, message = checkURL(data.message), id = data.chatID)
 })
 

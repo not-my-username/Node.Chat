@@ -10,13 +10,13 @@ const filter = new Filter();
 const package = require('./package.json');
 const fs = require('fs');
 
-activeChatIDs = [];
-activeChats = [];
-activeUsers = [];
-chatsToRemove = [];
-openChats = "";
-changeLog = "";
-isValid = true;
+var activeChatIDs = [];
+var activeChats = [];
+var activeUsers = [];
+var chatsToRemove = [];
+var openChats = "";
+var changeLog = "";
+var isValid = true;
 
 class Chat {
     constructor(chatID, chatName = "", maxUsers = 4, censorChat = true, antiSpam = true) {
@@ -50,10 +50,12 @@ app.set('view engine', 'ejs');
 app.use(express.static(__dirname + '/public'));
 
 app.get('/', function(req, res) {
+    openChats = ""
     activeChats.forEach(chat => {
         openChats += `<u onclick="openChat(this)" id=${chat.chatID} style="color:#00c8ff;">${chat.chatID}: ${chat.chatName}</u><br/>`;
     });
     changeLogText = fs.readFileSync("./public/change-log.txt").toString().split("\n");
+    changeLog = ""
     for (i in changeLogText) {
         changeLog += `<li>${changeLogText[i]} </li>`
     }
@@ -66,23 +68,27 @@ app.get('/', function(req, res) {
 
 app.get("/newChat", function(req, res) {
     console.log("New Chat");
+    isValid = true
     while (isValid) {
         chatID = Math.round(Math.random() * (999999 - 10000) + 10000)
         isValid = activeChatIDs.includes(chatID)
     }
     activeChatIDs.push(chatID)
-    censorChat = !!parseInt(req.query.censor)
+    censorChat = (req.query.censorChat == "true" ? true : false),
+        console.log(censorChat);
     activeChats[chatID] = new Chat(
         chatID = chatID,
         chatName = xss(req.query.chatName) || chatID,
         maxUsers = req.query.maxUsers || 0,
-        censorChat = censorChat = "off" ? true : censorChat, password = req.query.password
+        censorChat = censorChat,
+        password = req.query.password
     )
     res.redirect(`/chat?chatID=${chatID}`)
 })
 
 app.get("/newChatID", function(req, res) {
     console.log("New Chat");
+    isValid = true
     while (isValid) {
         chatID = Math.round(Math.random() * (999999 - 10000) + 10000)
         isValid = activeChatIDs.includes(chatID)
@@ -118,13 +124,13 @@ io.on("connection", (socket) => {
         chatID = parseInt(data.chatID)
         if (!activeChatIDs.includes(parseInt(chatID))) {
             console.log("Invalid chat id");
-            socket.emit("message", { username: "SERVER", message: "ERROR: Chat ID Missing" })
+            socket.emit("message", { username: "SERVER ERROR", message: "ERROR: Chat ID Missing", chatID: chatID })
             return
         }
 
         if (data.password != activeChats[chatID].password) {
             console.log("incorrect password");
-            socket.emit("message", { username: "SERVER", message: "INCORRECT PASSWORD!" })
+            socket.emit("message", { username: "SERVER ERROR", message: "INCORRECT PASSWORD!", chatID: chatID })
             return
         }
 
@@ -146,14 +152,43 @@ io.on("connection", (socket) => {
             clearTimeout(chatsToRemove[chatID])
         }
     });
-    socket.on('disconnect', function() {
+    socket.on("changeUsername", function(data) {
+        console.log(data.username);
+        console.log(activeUsers[socket.id].username);
+        console.log(activeChats);
+        activeUsers[socket.id].username = data.username;
+        activeUsers[socket.id].chats.forEach(chat => {
+            activeChats[chat].users[socket.id].username = data.username
+        })
+        console.log(activeUsers[socket.id].username);
+        console.log(activeChats);
+    })
+    socket.on("leaveChat", function(data) {
+        if (!activeUsers[socket.id]) return
+        console.log(data.chatID);
+        io.sockets.in(data.chatID).emit('userDisconnected', { id: socket.id, username: activeUsers[socket.id].username, chatID: data.chatID });
+        activeChats[data.chatID].removeUser(socket.id);
+        delete activeUsers[socket.id]
+        if (activeChats[data.chatID].totalUsers <= 0) {
+            log("removing: " + data.chatID)
+            chatsToRemove[data.chatID] = setTimeout(() => {
+                id = data.chatID
+                log("Chat " + id + " removed")
+                activeChatIDs.splice(activeChatIDs.indexOf(id))
+                delete activeChats[id]
+            }, 60000)
+        }
+    })
+    socket.on("disconnect", function() {
         if (!activeUsers[socket.id]) return
         console.log("User disconnected " + activeUsers[socket.id].username);
 
         activeUsers[socket.id].chats.forEach(e => {
+            log(e)
             io.sockets.in(e).emit('userDisconnected', { id: socket.id, username: activeUsers[socket.id].username, chatID: e });
             activeChats[e].removeUser(socket.id);
 
+            delete activeUsers[socket.id]
             if (activeChats[e].totalUsers <= 0) {
                 log("removing: " + e)
                 chatsToRemove[e] = setTimeout(() => {
@@ -161,7 +196,6 @@ io.on("connection", (socket) => {
                     log("Chat " + id + " removed")
                     activeChatIDs.splice(activeChatIDs.indexOf(id))
                     delete activeChats[id]
-                    delete activeUsers[socket.id]
                 }, 60000)
             }
         });
