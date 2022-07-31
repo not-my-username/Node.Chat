@@ -108,6 +108,7 @@ app.get("/newChatID", function(req, res) {
 io.on("connection", (socket) => {
     console.log("Scoket connection");
     socket.on("message", function(data) {
+        console.log("test message on socket.on");
         try {
             chatID = parseInt(data.chatID)
             if (!activeUsers[socket.id] || data.message == "" || chatID == false || !activeUsers[socket.id].chats.includes(parseInt(chatID))) return
@@ -187,8 +188,6 @@ io.on("connection", (socket) => {
             log(e)
             io.sockets.in(e).emit('userDisconnected', { id: socket.id, username: activeUsers[socket.id].username, chatID: e });
             activeChats[e].removeUser(socket.id);
-
-            delete activeUsers[socket.id]
             if (activeChats[e].totalUsers <= 0) {
                 log("removing: " + e)
                 chatsToRemove[e] = setTimeout(() => {
@@ -199,6 +198,8 @@ io.on("connection", (socket) => {
                 }, 60000)
             }
         });
+        delete activeUsers[socket.id]
+
     })
 })
 
