@@ -171,8 +171,8 @@ socket.on("newUser", function(data) {
 })
 
 socket.on("changeUsername", function(data) {
-    console.log(data)
-    newMessage(username = "SERVER", message = data.username + " Joined The Chat", id = data.chatID)
+    console.log(data.old + " Changed there name to " + data.new)
+    newMessage(username = "SERVER", message = data.old + " Changed there name to " + data.new, id = data.chatID)
 })
 
 socket.on("message", function(data) {
