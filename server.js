@@ -154,15 +154,13 @@ io.on("connection", (socket) => {
         }
     });
     socket.on("changeUsername", function(data) {
-        console.log(data.username);
-        console.log(activeUsers[socket.id].username);
-        console.log(activeChats);
+        console.log(activeUsers[socket.id].username + " Changed there username to: " + data.username);
         activeUsers[socket.id].username = data.username;
         activeUsers[socket.id].chats.forEach(chat => {
             activeChats[chat].users[socket.id].username = data.username
         })
-        console.log(activeUsers[socket.id].username);
-        console.log(activeChats);
+        io.sockets.in(data.chatID).emit("changeName", { id: socket.id, username: activeUsers[socket.id].username, chatID: data.chatID });
+
     })
     socket.on("leaveChat", function(data) {
         if (!activeUsers[socket.id]) return

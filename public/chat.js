@@ -3,6 +3,7 @@ var activeChat = chatID
 var socket = io.connect();
 var chats = []
 var localUsername = localStorage.getItem("username")
+var sessionData = localStorage.getItem("sessionData") || []
 $("#username").html(localUsername)
 $("#chatID").html("ID: " + chatID)
 
@@ -27,7 +28,8 @@ socket.on("roomData", function(data) {
         $("#chatName").text(data.name)
         chats[chatID] = { name: data.name, history: [] }
     } else chats[data.id] = { name: data.name, history: [] }
-
+    sessionData.push[data.id]
+    localStorage.setItem("sessionData", sessionData)
 })
 
 
@@ -49,6 +51,7 @@ function changeChat(chat) {
     chats[chat.id].history.forEach(message => {
         $("#history").append(message);
     });
+    document.title = ($("#pageTitle").val() != "" ? $("#pageTitle").val() : chats[activeChat].name + " | Node.Chat V3")
 }
 
 function createChat() {
@@ -144,6 +147,7 @@ function saveSettings() {
         }
     }
     localStorage.setItem("settings", JSON.stringify(settings))
+    document.title = ($("#pageTitle").val() != "" ? $("#pageTitle").val() : chats[activeChat].name + " | Node.Chat V3")
 }
 
 function changeUsername() {
@@ -162,6 +166,11 @@ function leaveChat() {
 
 socket.on("newUser", function(data) {
     console.log("New User");
+    console.log(data)
+    newMessage(username = "SERVER", message = data.username + " Joined The Chat", id = data.chatID)
+})
+
+socket.on("changeUsername", function(data) {
     console.log(data)
     newMessage(username = "SERVER", message = data.username + " Joined The Chat", id = data.chatID)
 })
