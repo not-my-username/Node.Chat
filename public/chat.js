@@ -148,6 +148,7 @@ function saveSettings() {
     }
     localStorage.setItem("settings", JSON.stringify(settings))
     document.title = ($("#pageTitle").val() != "" ? $("#pageTitle").val() : chats[activeChat].name + " | Node.Chat V3")
+        // $("body").get(0).style.setProperty("--color", "hotpink");
 }
 
 function changeUsername() {
